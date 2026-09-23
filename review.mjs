@@ -196,7 +196,7 @@ const PRICES = {
   'claude-opus-5-5': { in: 4, out: 20 },
   'claude-opus-5': { in: 5, out: 25 },
   'claude-opus-4-8': { in: 5, out: 25 },
-  'claude-sonnet-5': { in: 3, out: 15 },
+  'claude-sonnet-5': { in: 2, out: 10 },
   'claude-haiku-4-5-20251001': { in: 1, out: 5 },
   'gpt-5.3-codex': { in: 1.75, out: 14 },
   'gpt-5.4-2026-03-05': { in: 2.5, out: 15 },
