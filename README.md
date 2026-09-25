@@ -115,7 +115,8 @@ Set `SKIP_GUIDELINES=1` to review without any guideline files.
 Edit `DEFAULTS` in `review.mjs`, then check **two** other places in the same file:
 
 1. **`PRICES`** -- add the new model, or the cost line reports it as unpriced and excludes it
-   from the total.
+   from the total. Cache reads cost a tenth of input by default; set `cacheRead` to override
+   that fraction.
 2. **`EFFORT_MODELS`** / **`REASONING_MODELS`** -- model-family regexes gating
    `output_config.effort` (Claude) and `reasoning.effort` (OpenAI). A model string that does not
    match **silently loses the effort config** rather than erroring. Newer Claude models need it;
