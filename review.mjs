@@ -505,6 +505,7 @@ async function codexReview(diff, guidelines) {
     body: JSON.stringify({
       model: cfg.openai_model,
       max_output_tokens: MAX_RESPONSE_TOKENS,
+      ...effortConfig(cfg.openai_model),
       input: [
         {
           role: 'system',
