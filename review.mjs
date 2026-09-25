@@ -201,7 +201,8 @@ const ignoreRes = cfg.ignore.map(globToRegex)
 const isIgnored = (f) => ignoreRes.some((re) => re.test(f))
 const approxTokens = (s) => Math.ceil(s.length / 4)
 
-// --- cost telemetry (pilot): prices in $/MTok, printed to the Actions log ---
+// --- cost telemetry (pilot): prices in $/MTok, printed to the Actions log and
+// tabled in the posted review ---
 // Keep this in sync with DEFAULTS above (anthropic_model / openai_model /
 // synth_model) -- consumer repos cannot set a model, so this file is the only place.
 // Cache reads default to a tenth of input; `cacheRead` overrides that fraction.
@@ -270,6 +271,24 @@ const unpricedNote = () =>
   unpricedModels.size
     ? ` (excludes unpriced model(s): ${[...unpricedModels].join(', ')})`
     : ''
+
+// Markdown section for the posted review; every call made so far, one row each.
+function usageTable() {
+  if (!usageEntries.length) return []
+  const cost = (e) => (e.cost == null ? '?' : `$${e.cost.toFixed(4)}`)
+  return [
+    '',
+    '#### API usage',
+    '| Call | Model | In | Cached | Out | Cost |',
+    '| --- | --- | --- | --- | --- | --- |',
+    ...usageEntries.map(
+      (e) =>
+        `| ${e.label} | ${e.model} | ${e.input} | ${e.cacheRead} | ${e.output} | ${cost(e)} |`
+    ),
+    '',
+    `Total ~$${totalCost().toFixed(4)}${unpricedNote()}`,
+  ]
+}
 
 // ------------------------------------------------------------- get diff ----
 
@@ -740,6 +759,7 @@ async function postReview(merged, meta) {
           ...unanchored.map(flatItem),
         ]
       : []),
+    ...usageTable(),
   ]
 
   // Findings ride along in the posted body so a later /ai-fix can read them back
