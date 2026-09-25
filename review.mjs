@@ -536,7 +536,12 @@ async function codexReview(diff, guidelines) {
 
 // `diag` separates a truncated answer from a refusal from malformed output.
 function parseReview(text, source, diag = {}) {
-  const cleaned = text.replace(/```json|```/g, '').trim()
+  // Only an outer fence: fences inside string values are code in `suggested_fix`.
+  const cleaned = text
+    .trim()
+    .replace(/^```(?:json)?\s*/i, '')
+    .replace(/\s*```$/, '')
+    .trim()
   // Direct parse first; brace-slicing is only a fallback for prose-wrapped JSON.
   let parsed
   try {
