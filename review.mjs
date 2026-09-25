@@ -90,8 +90,8 @@ function effortConfig(model, effort = REVIEW_EFFORT) {
 
 const DEFAULTS = {
   anthropic_model: 'claude-opus-5-5',
-  openai_model: 'gpt-5.6-terra',
-  synth_model: 'claude-haiku-4-5-20251001',
+  openai_model: 'gpt-6-sol',
+  synth_model: 'gpt-6-luna',
   synth_effort: 'low',
   max_diff_tokens: 80_000, // hard budget cap
   min_severity_to_post: 'major', // "critical" | "major" | "minor"
@@ -210,6 +210,8 @@ const PRICES = {
   'claude-opus-4-8': { in: 5, out: 25 },
   'claude-sonnet-5': { in: 2, out: 10 },
   'claude-haiku-4-5-20251001': { in: 1, out: 5 },
+  'gpt-6-sol': { in: 2, out: 10 },
+  'gpt-6-luna': { in: 0.1, out: 0.5 },
   'gpt-5.3-codex': { in: 1.75, out: 14 },
   'gpt-5.4-2026-03-05': { in: 2.5, out: 15 },
   'gpt-5.6-terra': { in: 2.5, out: 15 },
