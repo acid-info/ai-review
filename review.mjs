@@ -786,16 +786,20 @@ async function postReview(merged, meta) {
   }).replace(/>/g, '\\u003e')
   const marker = `<!-- ai-review:findings ${findings} -->`
   // GitHub caps a comment body at 65536 chars; losing the marker beats losing the review.
-  if (bodyLines.join('\n').length + marker.length + 2 <= 60_000) {
-    bodyLines.push('', marker)
-  } else {
+  const MAX_BODY = 60_000
+  const finalizeBody = (lines) => {
+    let text = lines.join('\n')
+    if (text.length > MAX_BODY)
+      text = `${text.slice(0, MAX_BODY - 100)}\n\n… (truncated to fit GitHub's comment limit)`
+    if (text.length + marker.length + 2 <= MAX_BODY) return `${text}\n\n${marker}`
     console.warn(
-      `[warn] findings marker omitted: it would push the review body past the 60000-char ` +
-        `guard (body ${bodyLines.join('\n').length}, marker ${marker.length}).`
+      `[warn] findings marker omitted: it would push the review body past the ${MAX_BODY}-char ` +
+        `guard (body ${text.length}, marker ${marker.length}).`
     )
+    return text
   }
 
-  const body = bodyLines.join('\n')
+  const body = finalizeBody(bodyLines)
 
   const comments = anchored.map((i) => ({
     path: i.file,
@@ -827,10 +831,12 @@ async function postReview(merged, meta) {
     console.error(
       `[warn] inline review failed (${e.message}); posting summary + list instead.`
     )
-    const flat = anchored.map(flatItem).join('\n')
+    const flatBody = anchored.length
+      ? finalizeBody([...bodyLines, '', ...anchored.map(flatItem)])
+      : body
     await gh(`/repos/${OWNER}/${NAME}/issues/${PR_NUMBER}/comments`, {
       method: 'POST',
-      body: JSON.stringify({ body: `${body}\n\n${flat}` }),
+      body: JSON.stringify({ body: flatBody }),
     })
   }
   return criticals
