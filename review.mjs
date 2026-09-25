@@ -126,13 +126,15 @@ function loadConfig() {
   const cfg = { ...DEFAULTS }
   const path = '.github/ai-review.yml'
   if (!existsSync(path)) return cfg
+  const unquote = (s) => s.trim().replace(/^(["'])(.*)\1$/, '$2')
   let currentList = null
   for (const raw of readFileSync(path, 'utf8').split('\n')) {
     const line = raw.replace(/#.*$/, '').trimEnd()
     if (!line.trim()) continue
-    const listItem = line.match(/^\s+-\s+(.*)$/)
+    // YAML allows block-sequence items at column 0, directly under their key.
+    const listItem = line.match(/^\s*-\s+(.*)$/)
     if (listItem && currentList) {
-      cfg[currentList].push(listItem[1].trim().replace(/^(["'])(.*)\1$/, '$2'))
+      cfg[currentList].push(unquote(listItem[1]))
       continue
     }
     const kv = line.match(/^([\w_]+):\s*(.*)$/)
@@ -152,9 +154,13 @@ function loadConfig() {
       cfg[key] = []
       currentList = key
     } else {
-      // Strip surrounding quotes from scalars too, not just list items.
-      const scalar = val.trim().replace(/^(["'])(.*)\1$/, '$2')
-      cfg[key] = /^\d+$/.test(scalar) ? Number(scalar) : scalar
+      // Every overridable key is a list: a bare string would later be spread
+      // into one-character globs, and "*" alone ignores every root-level file.
+      const scalar = unquote(val)
+      const flow = scalar.match(/^\[(.*)\]$/)
+      cfg[key] = flow
+        ? flow[1].split(',').map(unquote).filter(Boolean)
+        : [scalar]
       currentList = null
     }
   }
