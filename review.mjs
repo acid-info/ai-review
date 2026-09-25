@@ -802,7 +802,7 @@ async function postReview(merged, meta) {
     line: issueLine(i),
     side: 'RIGHT',
     body:
-      `${icon[i.severity] ?? '•'} **${i.severity.toUpperCase()}** (${i.category})` +
+      `${icon[i.severity] ?? '•'} **${i.severity.toUpperCase()}** (${deMention(i.category)})` +
       `${i.agreement ? ' -- flagged by both models' : ''}\n\n${deMention(i.issue)}\n\n` +
       (i.suggested_fix
         ? `**Suggested fix:** ${deMention(i.suggested_fix)}`
