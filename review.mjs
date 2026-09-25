@@ -855,15 +855,28 @@ const {
   validLines,
 } = await getDiff()
 if (!diff.trim()) {
-  const body = noPatch.length
-    ? `🤖 AI review could NOT run: GitHub returned no reviewable diff for ${noPatch.length} ` +
-      `changed file(s) (diffs too large): ${noPatch.slice(0, 10).join(', ')}` +
-      `${noPatch.length > 10 ? ', …' : ''}. These changes were NOT reviewed.`
+  const unreviewed = [
+    noPatch.length &&
+      `GitHub returned no reviewable diff for ${noPatch.length} changed file(s) (diffs too large): ` +
+        `${noPatch.slice(0, 10).join(', ')}${noPatch.length > 10 ? ', …' : ''}`,
+    omitted &&
+      `${omitted} file(s) exceeded the diff token budget (${cfg.max_diff_tokens} tokens)`,
+    unlisted &&
+      `GitHub's file listing is capped and left ${unlisted} changed file(s) unlisted`,
+  ].filter(Boolean)
+  const body = unreviewed.length
+    ? `🤖 AI review could NOT run -- these changes were NOT reviewed:\n` +
+      unreviewed.map((s) => `- ${s}`).join('\n')
     : '🤖 Nothing reviewable in this PR after filtering (lockfiles/generated code are skipped).'
-  await gh(`/repos/${OWNER}/${NAME}/issues/${PR_NUMBER}/comments`, {
-    method: 'POST',
-    body: JSON.stringify({ body }),
-  })
+  if (process.env.DRY_RUN) {
+    console.log('\n===== DRY RUN -- comment that WOULD be posted =====\n')
+    console.log(body)
+  } else {
+    await gh(`/repos/${OWNER}/${NAME}/issues/${PR_NUMBER}/comments`, {
+      method: 'POST',
+      body: JSON.stringify({ body }),
+    })
+  }
   if (GITHUB_OUTPUT) appendFileSync(GITHUB_OUTPUT, 'criticals=0\n')
   process.exit(0)
 }
