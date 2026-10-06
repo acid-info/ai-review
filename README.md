@@ -1,5 +1,16 @@
 # ai-review
 
+> [!WARNING]
+> **Deprecated.** ai-review now lives in
+> [acid-info/ai-tools](https://github.com/acid-info/ai-tools/tree/master/tools/ai-review) and is
+> no longer maintained here. To migrate, change the `uses:` line of your workflow.
+> `.github/ai-review.yml` and the secrets stay the same.
+>
+> ```diff
+> - uses: acid-info/ai-review/.github/workflows/ai-review.yml@v1
+> + uses: acid-info/ai-tools/.github/workflows/ai-review.yml@ai-review/v1
+> ```
+
 Shared AI pull-request reviewer for `logos-co`, `status-im` and `acid-info`. Two models review
 the same diff independently, a third merges their findings, and the result is posted as a single
 PR review with inline comments.
